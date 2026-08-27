@@ -1,0 +1,60 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AuditLog {
+  id                String         @id @default(cuid())
+  createdAt         DateTime       @default(now())
+  source            String         @default("UPLOAD") // "UPLOAD" | "WEBCAM"
+  fileName          String?
+  originalImageUrl  String?
+  annotatedImageUrl String?
+  complianceStatus  String         @default("NON_COMPLIANT") // "COMPLIANT" | "PARTIAL" | "NON_COMPLIANT"
+  complianceScore   Float          @default(0)
+  helmetCount       Int            @default(0)
+  jacketCount       Int            @default(0)
+  totalDetected     Int            @default(0)
+  inferenceMs       Float          @default(0)
+  notes             String?
+  items             DetectedItem[]
+
+  @@index([createdAt])
+  @@index([complianceStatus])
+}
+
+model DetectedItem {
+  id         String   @id @default(cuid())
+  auditLogId String
+  auditLog   AuditLog @relation(fields: [auditLogId], references: [id], onDelete: Cascade)
+  classId    Int
+  label      String
+  confidence Float
+  x1         Float
+  y1         Float
+  x2         Float
+  y2         Float
+  normX1     Float
+  normY1     Float
+  normX2     Float
+  normY2     Float
+
+  @@index([auditLogId])
+}
+
+model Camera {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  type      String   @default("RTSP") // "DEVICE" | "RTSP"
+  url       String?
+  location  String?
+  isActive  Boolean  @default(false)
+
+  @@index([createdAt])
+}

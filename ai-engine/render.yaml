@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: sidetek-apd-ai-engine
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    region: singapore
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: HOST
+        value: 0.0.0.0

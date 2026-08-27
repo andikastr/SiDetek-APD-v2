@@ -1,0 +1,101 @@
+# ==========================================
+# SiDetek-APD Root GitIgnore Configuration
+# Monorepo: FastAPI (AI Engine) + Next.js (Fullstack)
+# ==========================================
+
+# --- AI & Machine Learning Weights ---
+# Ignore heavy PyTorch checkpoint files (kept as local backup only)
+*.pt
+*.pth
+*.bin
+*.ckpt
+
+# Keep production ONNX models tracked for deployment
+!ai-engine/weights/*.onnx
+
+# Temporary detection test outputs
+ai-engine/assets/*-detected.jpg
+ai-engine/assets/test-output*.jpg
+
+# --- Python Environment & Caches ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+*.pyo
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python test & type checker caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Node.js & Next.js Frontend ---
+node_modules/
+.next/
+out/
+build/
+dist/
+.turbo/
+
+# TypeScript & Next build artifacts
+*.tsbuildinfo
+next-env.d.ts
+
+# Package manager debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Vercel deployment cache
+.vercel/
+
+# --- Database & Local Storage ---
+# SQLite local databases & write-ahead logs
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.sqlite-journal
+*.sqlite3-journal
+prisma/dev.db*
+fullstack/prisma/*.db*
+
+# --- Environment Variables & Secrets ---
+# Ignore all private environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Allow committing example environment files
+!.env.example
+!*.env.example
+
+# --- Operating System & Editor Artifacts ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
