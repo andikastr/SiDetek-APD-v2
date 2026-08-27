@@ -10,6 +10,10 @@ import {
   FileSpreadsheet,
   HardHat,
   Shield,
+  Clock,
+  Filter,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { AuditRecord } from "@/types";
 import ComplianceBadge from "@/components/ComplianceBadge";
@@ -19,6 +23,9 @@ export default function HistoryPage() {
   const [records, setRecords] = useState<AuditRecord[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedRecord, setSelectedRecord] = useState<AuditRecord | null>(null);
+  const [recordToDelete, setRecordToDelete] = useState<AuditRecord | null>(null);
+  const [isDeletingSingle, setIsDeletingSingle] = useState<boolean>(false);
+  const [isDeletingAll, setIsDeletingAll] = useState<boolean>(false);
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [filterSource, setFilterSource] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -43,28 +50,40 @@ export default function HistoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterStatus, filterSource]);
 
-  const handleDeleteSingle = async (id: string) => {
-    if (!confirm("Delete this audit record?")) return;
+  const confirmDeleteSingle = async () => {
+    if (!recordToDelete) return;
+    setIsDeletingSingle(true);
     try {
-      const res = await fetch(`/api/history?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/history?id=${recordToDelete.id}`, { method: "DELETE" });
       if (res.ok) {
-        setRecords((prev) => prev.filter((r) => r.id !== id));
-        if (selectedRecord?.id === id) setSelectedRecord(null);
+        setRecords((prev) => prev.filter((r) => r.id !== recordToDelete.id));
+        if (selectedRecord?.id === recordToDelete.id) setSelectedRecord(null);
+        setRecordToDelete(null);
+      } else {
+        throw new Error("Failed to delete record.");
       }
     } catch {
       alert("Failed to delete record.");
+    } finally {
+      setIsDeletingSingle(false);
     }
   };
 
   const handleDeleteAll = async () => {
+    setIsDeletingAll(true);
     try {
       const res = await fetch("/api/history?all=true", { method: "DELETE" });
       if (res.ok) {
         setRecords([]);
+        setSelectedRecord(null);
         setShowDeleteAllModal(false);
+      } else {
+        throw new Error("Failed to clear audit records.");
       }
     } catch {
       alert("Failed to delete records.");
+    } finally {
+      setIsDeletingAll(false);
     }
   };
 
@@ -78,66 +97,63 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Official Print Header (Only visible when printing) */}
+      {/* Official Print Header (Visible only when printing report) */}
       <div className="hidden print:block pb-6 border-b-2 border-slate-900 mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-[#e36124] mb-1">
-              ARTHA IT · POWERINTELLIGENT
+            <div className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-1">
+              SIDETEK-APD · INDUSTRIAL K3 VISION SURVEILLANCE
             </div>
-            <h1 className="text-xl font-bold text-slate-900 uppercase tracking-tight">
+            <h1 className="text-xl font-extrabold text-slate-900 uppercase tracking-tight">
               OFFICIAL PPE COMPLIANCE AUDIT REPORT
             </h1>
             <p className="text-xs text-slate-600 mt-1">
-              Construction &amp; Fabrication Jobsite — Automated Vision Surveillance System
+              Automated Optical Safety Inspection Evidence Log
             </p>
           </div>
-          <div className="text-right text-xs text-slate-600">
-            <p>Standards: EN 397 · EN ISO 20471</p>
-            <p>Printed Date: {new Date().toLocaleDateString("en-US")}</p>
+          <div className="text-right text-xs text-slate-600 font-technical">
+            <p>Compliance Standards: EN 397 · EN ISO 20471</p>
+            <p>Report Date: {new Date().toLocaleDateString("en-US")}</p>
           </div>
         </div>
       </div>
 
-      {/* Screen Header & Top Action Bar */}
-      <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+      {/* Screen Top Action Bar */}
+      <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200/80">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-gray-900">
-            Audit History Log
-          </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Archived records of on-site safety compliance inspections.
+          <p className="text-xs text-slate-500">
+            Archived compliance evidence recorded from local image inspections and real-time CCTV streams.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-[#0a1b5c] hover:bg-[#0d327f] text-white text-xs font-medium shadow-xs transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
             title="Print formal K3 audit report"
           >
-            <Printer className="w-3.5 h-3.5 text-white" />
+            <Printer className="w-3.5 h-3.5 text-amber-400" />
             <span>Print Report</span>
           </button>
 
           {records.length > 0 && (
             <button
               onClick={() => setShowDeleteAllModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-gray-500 hover:text-rose-600 text-xs transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>Clear All</span>
+              <span>Clear Log</span>
             </button>
           )}
         </div>
       </div>
 
       {/* Screen Filters & Search Toolbar */}
-      <div className="no-print flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-gray-200 bg-white shadow-2xs">
+      <div className="no-print flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 bg-white shadow-2xs">
         {/* Status Filter Tabs */}
         <div className="flex flex-wrap items-center gap-1 text-xs">
           {[
-            { id: "ALL", label: "All" },
+            { id: "ALL", label: "All Records" },
             { id: "COMPLIANT", label: "Compliant" },
             { id: "PARTIAL", label: "Partial" },
             { id: "NON_COMPLIANT", label: "Violation" },
@@ -145,10 +161,10 @@ export default function HistoryPage() {
             <button
               key={tab.id}
               onClick={() => setFilterStatus(tab.id)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 filterStatus === tab.id
-                  ? "bg-[#0a1b5c] text-white shadow-xs"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               }`}
             >
               {tab.label}
@@ -158,99 +174,104 @@ export default function HistoryPage() {
 
         {/* Source Dropdown & Search Input */}
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-56">
-            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <div className="relative flex-1 sm:w-60">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search files..."
+              placeholder="Search filename or session..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-md border border-gray-200 bg-gray-50 text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#0a1b5c]"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-slate-900 font-medium"
             />
           </div>
 
           <select
             value={filterSource}
             onChange={(e) => setFilterSource(e.target.value)}
-            className="px-3 py-1.5 rounded-md border border-gray-200 bg-gray-50 text-xs font-medium text-gray-700 focus:outline-none focus:bg-white"
+            className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs font-semibold text-slate-700 focus:outline-none focus:bg-white cursor-pointer"
           >
             <option value="ALL">All Methods</option>
-            <option value="UPLOAD">Photo</option>
-            <option value="WEBCAM">Webcam</option>
+            <option value="UPLOAD">Photo Upload</option>
+            <option value="WEBCAM">CCTV / Webcam</option>
           </select>
         </div>
       </div>
 
       {/* Structured Formal Table */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-xs overflow-hidden print-card">
+      <div className="rounded-3xl border border-slate-200/80 bg-white shadow-xs overflow-hidden print-card">
         {isLoading ? (
-          <div className="py-16 text-center text-xs text-gray-400">
+          <div className="py-16 text-center text-xs text-slate-400 font-medium">
             Loading inspection records...
           </div>
         ) : filteredRecords.length === 0 ? (
           <div className="py-16 text-center space-y-2">
-            <FileSpreadsheet className="w-7 h-7 text-gray-300 mx-auto" />
-            <p className="text-xs text-gray-400">
+            <FileSpreadsheet className="w-8 h-8 text-slate-300 mx-auto" />
+            <p className="text-xs text-slate-500 font-medium">
               No matching audit records found.
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-gray-200 text-[#0a1b5c] font-semibold uppercase tracking-wider text-[10px] bg-gray-50/70">
+              <thead className="border-b border-slate-200/80 text-slate-500 font-semibold uppercase tracking-wider text-[10px] bg-slate-50/60 font-technical">
                 <tr>
-                  <th className="py-3 px-6">Timestamp</th>
-                  <th className="py-3 px-4">File / Session</th>
-                  <th className="py-3 px-4">Method</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Identified PPE</th>
-                  <th className="py-3 px-4 text-center">Latency</th>
-                  <th className="py-3 px-6 text-right">Score</th>
-                  <th className="py-3 px-4 text-center no-print">Actions</th>
+                  <th className="py-3.5 px-6">Timestamp</th>
+                  <th className="py-3.5 px-4">File / Session</th>
+                  <th className="py-3.5 px-4">Method</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4">Identified PPE</th>
+                  <th className="py-3.5 px-4 text-center">Latency</th>
+                  <th className="py-3.5 px-6 text-right">Score</th>
+                  <th className="py-3.5 px-4 text-center no-print">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 text-gray-800">
+              <tbody className="divide-y divide-slate-100 text-slate-800">
                 {filteredRecords.map((record) => (
                   <tr
                     key={record.id}
-                    className="hover:bg-blue-50/15 transition-colors"
+                    className="hover:bg-slate-50/80 transition-colors"
                   >
-                    <td className="py-4 px-6 font-medium text-gray-900 text-xs whitespace-nowrap">
-                      {formatDate(record.createdAt)}
+                    <td className="py-4 px-6 font-medium text-slate-900 text-xs font-technical whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{formatDate(record.createdAt)}</span>
+                      </div>
                     </td>
-                    <td className="py-4 px-4 font-medium text-gray-700 max-w-[200px] truncate" title={record.fileName || ""}>
-                      {record.fileName || "Session"}
+                    <td className="py-4 px-4 font-semibold text-slate-800 max-w-[200px] truncate" title={record.fileName || ""}>
+                      {record.fileName || "Live Session"}
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-[11px] text-gray-500 capitalize">
+                      <span className="text-[11px] font-semibold text-slate-600 px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200/60 capitalize">
                         {record.source.toLowerCase()}
                       </span>
                     </td>
                     <td className="py-4 px-4">
                       <ComplianceBadge status={record.complianceStatus} size="sm" />
                     </td>
-                    <td className="py-4 px-4 text-gray-600 text-xs">
-                      {record.helmetCount} helmets, {record.jacketCount} vests
+                    <td className="py-4 px-4 text-slate-600 text-xs font-medium">
+                      <span className="text-emerald-700">{record.helmetCount} helmets</span>
+                      <span className="text-slate-300 mx-1">•</span>
+                      <span className="text-amber-700">{record.jacketCount} vests</span>
                     </td>
-                    <td className="py-4 px-4 text-center text-gray-400 font-mono text-[11px]">
+                    <td className="py-4 px-4 text-center text-slate-500 font-technical text-[11px]">
                       {record.inferenceMs} ms
                     </td>
-                    <td className="py-4 px-6 text-right font-semibold text-gray-900">
+                    <td className="py-4 px-6 text-right font-extrabold text-slate-900 font-technical text-sm">
                       {record.complianceScore}%
                     </td>
                     <td className="py-4 px-4 text-center no-print">
                       <div className="flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => setSelectedRecord(record)}
-                          className="p-1 rounded text-[#0a1b5c] hover:bg-blue-50 transition-colors"
-                          title="View Details"
+                          className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                          title="View Inspection Details"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteSingle(record.id)}
-                          className="p-1 rounded text-gray-400 hover:text-rose-600 transition-colors"
-                          title="Delete"
+                          onClick={() => setRecordToDelete(record)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete Record"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -266,27 +287,32 @@ export default function HistoryPage() {
 
       {/* Detail Modal */}
       {selectedRecord && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto no-print">
-          <div className="bg-white border border-gray-200 rounded-xl max-w-xl w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedRecord(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto no-print"
+        >
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-5 shadow-2xl my-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h3 className="text-base font-semibold text-gray-900">
-                  Inspection Details
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                  Safety Audit Details
                 </h3>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5 font-technical">
                   {formatDate(selectedRecord.createdAt)}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedRecord(null)}
-                className="p-1 rounded text-gray-400 hover:text-gray-700"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {selectedRecord.annotatedImageUrl && (
-              <div className="rounded-lg overflow-hidden bg-slate-950 max-h-[340px] flex items-center justify-center border border-gray-200">
+              <div className="rounded-2xl overflow-hidden bg-slate-950 max-h-[340px] flex items-center justify-center border border-slate-200">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selectedRecord.annotatedImageUrl}
@@ -296,39 +322,107 @@ export default function HistoryPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-4 gap-3 text-xs">
-              <div className="p-3 rounded-lg border border-gray-200 bg-gray-50">
-                <span className="text-[11px] text-gray-400 block">Status</span>
-                <div className="mt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/60">
+                <span className="text-[11px] text-slate-500 font-semibold block">Compliance</span>
+                <div className="mt-1.5">
                   <ComplianceBadge status={selectedRecord.complianceStatus} size="sm" />
                 </div>
               </div>
-              <div className="p-3 rounded-lg border border-gray-200 bg-gray-50">
-                <span className="text-[11px] text-gray-400 block">Score</span>
-                <span className="text-base font-bold text-[#0a1b5c] mt-0.5 block">
+              <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/60">
+                <span className="text-[11px] text-slate-500 font-semibold block">K3 Score</span>
+                <span className="text-lg font-extrabold text-slate-900 mt-1 block font-technical">
                   {selectedRecord.complianceScore}%
                 </span>
               </div>
-              <div className="p-3 rounded-lg border border-gray-200 bg-gray-50">
-                <span className="text-[11px] text-gray-400 block">Helmets / Vests</span>
-                <span className="text-base font-bold text-gray-900 mt-0.5 block">
+              <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/60">
+                <span className="text-[11px] text-slate-500 font-semibold block">Helmets / Vests</span>
+                <span className="text-lg font-extrabold text-slate-900 mt-1 block font-technical">
                   {selectedRecord.helmetCount} / {selectedRecord.jacketCount}
                 </span>
               </div>
-              <div className="p-3 rounded-lg border border-gray-200 bg-gray-50">
-                <span className="text-[11px] text-gray-400 block">Latency</span>
-                <span className="text-base font-bold text-gray-900 mt-0.5 block">
+              <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/60">
+                <span className="text-[11px] text-slate-500 font-semibold block">AI Latency</span>
+                <span className="text-lg font-extrabold text-slate-900 mt-1 block font-technical">
                   {selectedRecord.inferenceMs} ms
                 </span>
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end">
+            <div className="pt-2 flex items-center justify-between">
               <button
-                onClick={() => setSelectedRecord(null)}
-                className="px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium"
+                type="button"
+                onClick={() => setRecordToDelete(selectedRecord)}
+                className="px-3.5 py-2 rounded-xl text-rose-600 hover:bg-rose-50 hover:border-rose-200 border border-transparent text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                Close
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Record</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedRecord(null)}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-all cursor-pointer"
+              >
+                Close Inspector
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Single Record Delete Confirmation Modal */}
+      {recordToDelete && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeletingSingle) setRecordToDelete(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 no-print overflow-y-auto"
+        >
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl my-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                Delete Audit Record?
+              </h3>
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                Are you sure you want to delete{" "}
+                <span className="font-semibold text-slate-800 font-mono">
+                  {recordToDelete.fileName || "this audit record"}
+                </span>
+                ? All bounding boxes and inspection details will be permanently removed.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 text-xs font-semibold pt-2">
+              <button
+                type="button"
+                onClick={() => setRecordToDelete(null)}
+                disabled={isDeletingSingle}
+                className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteSingle}
+                disabled={isDeletingSingle}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-xs"
+              >
+                {isDeletingSingle ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Record</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -337,28 +431,51 @@ export default function HistoryPage() {
 
       {/* Delete All Confirmation Modal */}
       {showDeleteAllModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 no-print">
-          <div className="bg-white border border-gray-200 rounded-xl max-w-sm w-full p-5 space-y-4 shadow-xl">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeletingAll) setShowDeleteAllModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 no-print overflow-y-auto"
+        >
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl my-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
             <div>
-              <h3 className="text-base font-bold text-gray-900">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
                 Clear All Audit Records?
               </h3>
-              <p className="text-xs text-gray-500 mt-1">
-                All saved inspection logs will be permanently deleted from the system.
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                All saved inspection logs, worker evidence, and compliance timestamps will be permanently removed.
               </p>
             </div>
-            <div className="flex items-center justify-end gap-2 text-xs font-semibold">
+            <div className="flex items-center justify-end gap-2.5 text-xs font-semibold pt-2">
               <button
+                type="button"
                 onClick={() => setShowDeleteAllModal(false)}
-                className="px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-100"
+                disabled={isDeletingAll}
+                className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleDeleteAll}
-                className="px-3.5 py-1.5 rounded-md bg-rose-600 text-white hover:bg-rose-700 shadow-xs"
+                disabled={isDeletingAll}
+                className="px-4 py-2 rounded-xl bg-rose-600 text-white hover:bg-rose-700 shadow-xs transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
               >
-                Delete All
+                {isDeletingAll ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting All...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete All Logs</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

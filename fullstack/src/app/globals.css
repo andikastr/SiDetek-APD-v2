@@ -1,47 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap');
 @import "tailwindcss";
 
 :root {
-  /* PowerIntelligent × SiDetek-APD Hybrid Palette */
+  /* Refined Modern Enterprise Light Tokens */
   --background: #f8fafc;
   --foreground: #0f172a;
   --surface: #ffffff;
+  --surface-subtle: #f1f5f9;
   --border: #e2e8f0;
-  --border-hover: #cbd5e1;
+  --border-strong: #cbd5e1;
   
-  /* Brand Colors from PowerIntelligent DESIGN.md */
-  --brand-primary-blue: #0a1b5c;
-  --brand-primary-hover: #0d327f;
-  --brand-secondary-purple: #6c5a8e;
-  --brand-accent-orange: #e36124;
-  --brand-accent-gold: #e6b800;
+  /* Primary Deep Slate */
+  --slate-primary: #0f172a;
+  --slate-secondary: #334155;
+  --slate-muted: #64748b;
   
-  /* Safety K3 Functional Colors */
-  --safety-amber: #d97706;
-  --safety-amber-hover: #b45309;
-  
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  
-  --status-compliant: #059669;
-  --status-partial: #d97706;
-  --status-violation: #dc2626;
+  /* Safety K3 Accents */
+  --safety-amber: #f59e0b;
+  --safety-amber-hover: #d97706;
+  --safety-emerald: #10b981;
+  --safety-emerald-hover: #059669;
+  --safety-rose: #ef4444;
+  --safety-rose-hover: #dc2626;
+
+  /* Status Colors */
+  --status-compliant: #10b981;
+  --status-partial: #f59e0b;
+  --status-violation: #ef4444;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
   --color-border: var(--border);
-  --color-border-hover: var(--border-hover);
+  --color-border-strong: var(--border-strong);
   
-  --color-brand-blue: #0a1b5c;
-  --color-brand-purple: #6c5a8e;
-  --color-brand-orange: #e36124;
-  --color-safety-amber: #d97706;
+  --color-slate-primary: var(--slate-primary);
+  --color-slate-secondary: var(--slate-secondary);
+  --color-slate-muted: var(--slate-muted);
   
-  --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-  --font-mono: "SF Mono", "Fira Code", monospace;
+  --color-safety-amber: var(--safety-amber);
+  --color-safety-emerald: var(--safety-emerald);
+  --color-safety-rose: var(--safety-rose);
+  
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 body {
@@ -50,25 +55,91 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  letter-spacing: -0.01em;
 }
 
-/* Subtle scrollbar */
+/* Technical Monospace figures */
+.font-technical {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.025em;
+}
+
+/* Tactical Stage Corner Brackets */
+.tactical-viewport {
+  position: relative;
+}
+.tactical-viewport::before,
+.tactical-viewport::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 25;
+  transition: all 0.2s ease;
+}
+.tactical-viewport::before {
+  top: 8px;
+  left: 8px;
+  border-top: 2px solid rgba(245, 158, 11, 0.7);
+  border-left: 2px solid rgba(245, 158, 11, 0.7);
+}
+.tactical-viewport::after {
+  bottom: 8px;
+  right: 8px;
+  border-bottom: 2px solid rgba(245, 158, 11, 0.7);
+  border-right: 2px solid rgba(245, 158, 11, 0.7);
+}
+
+/* Modern Card with Subtle Elevation */
+.card-modern {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 4px 14px 0 rgba(15, 23, 42, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-modern:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 6px 0 rgba(15, 23, 42, 0.05), 0 8px 24px 0 rgba(15, 23, 42, 0.04);
+}
+
+/* Sleek Global Scrollbar System (Transparent Track & Rounded Pill) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background-color: #cbd5e1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background-color: #94a3b8;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Print-Ready Official K3 Document Styling */

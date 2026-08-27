@@ -98,3 +98,60 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, name, type, url, location } = body;
+
+    if (!id || typeof id !== "string") {
+      return NextResponse.json(
+        { success: false, error: "Camera ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!name || typeof name !== "string") {
+      return NextResponse.json(
+        { success: false, error: "Camera name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (type !== "DEVICE" && type !== "RTSP") {
+      return NextResponse.json(
+        { success: false, error: "Invalid camera type (must be DEVICE or RTSP)" },
+        { status: 400 }
+      );
+    }
+
+    if (type === "RTSP" && (!url || typeof url !== "string")) {
+      return NextResponse.json(
+        { success: false, error: "RTSP stream URL is required for RTSP cameras" },
+        { status: 400 }
+      );
+    }
+
+    const updatedCamera = await prisma.camera.update({
+      where: { id },
+      data: {
+        name: name.trim(),
+        type,
+        url: type === "RTSP" ? url?.trim() || null : null,
+        location: location?.trim() || "Main Jobsite Area",
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: updatedCamera,
+    });
+  } catch (error: unknown) {
+    console.error("Error updating camera:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to update camera" },
+      { status: 500 }
+    );
+  }
+}
+

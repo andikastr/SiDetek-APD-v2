@@ -20,6 +20,11 @@ import {
   Play,
   Layers,
   Gauge,
+  Maximize2,
+  Minimize2,
+  Pencil,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { StreamFrameResponse, DetectedObject, CameraItem } from "@/types";
 import { createStreamWebSocket, createRTSPWebSocket } from "@/lib/ai-client";
@@ -53,6 +58,18 @@ export default function WebcamDetector() {
   const [newCamUrl, setNewCamUrl] = useState<string>("");
   const [isSavingCam, setIsSavingCam] = useState<boolean>(false);
 
+  // Edit Modal State
+  const [editingCamera, setEditingCamera] = useState<CameraItem | null>(null);
+  const [editCamName, setEditCamName] = useState<string>("");
+  const [editCamType, setEditCamType] = useState<"DEVICE" | "RTSP">("RTSP");
+  const [editCamLocation, setEditCamLocation] = useState<string>("");
+  const [editCamUrl, setEditCamUrl] = useState<string>("");
+  const [isEditingCam, setIsEditingCam] = useState<boolean>(false);
+
+  // Delete Camera Modal State
+  const [camToDelete, setCamToDelete] = useState<CameraItem | null>(null);
+  const [isDeletingCam, setIsDeletingCam] = useState<boolean>(false);
+
   // Refs for Device Webcam
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -61,8 +78,32 @@ export default function WebcamDetector() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastDetectionsRef = useRef<DetectedObject[]>([]);
   const targetFpsRef = useRef<number>(10);
-
   targetFpsRef.current = targetFps;
+
+  // Fullscreen State & Ref
+  const masterStageRef = useRef<HTMLDivElement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!masterStageRef.current) return;
+    if (!document.fullscreenElement) {
+      masterStageRef.current.requestFullscreen().catch((err) => {
+        console.error("Fullscreen request failed:", err);
+      });
+    } else {
+      document.exitFullscreen().catch((err) => {
+        console.error("Exit fullscreen failed:", err);
+      });
+    }
+  };
 
   // Fetch registered cameras from project database
   const fetchCameras = useCallback(async () => {
@@ -386,21 +427,72 @@ export default function WebcamDetector() {
     }
   };
 
-  // Delete camera handler
-  const handleDeleteCamera = async (id: string, name: string, e: React.MouseEvent) => {
+  // Open edit modal
+  const handleOpenEditModal = (cam: CameraItem, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm(`Delete camera "${name}" from project database?`)) return;
+    setEditingCamera(cam);
+    setEditCamName(cam.name);
+    setEditCamType(cam.type);
+    setEditCamLocation(cam.location || "Sector A - Main Gate");
+    setEditCamUrl(cam.url || "");
+  };
 
+  // Save edited camera handler
+  const handleSaveEditCamera = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCamera) return;
+    if (!editCamName.trim()) return;
+    if (editCamType === "RTSP" && !editCamUrl.trim()) return;
+
+    setIsEditingCam(true);
     try {
-      const res = await fetch(`/api/cameras?id=${id}`, { method: "DELETE" });
+      const res = await fetch("/api/cameras", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingCamera.id,
+          name: editCamName.trim(),
+          type: editCamType,
+          url: editCamType === "RTSP" ? editCamUrl.trim() : null,
+          location: editCamLocation.trim() || "Main Jobsite Area",
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setCameras((prev) => prev.map((c) => (c.id === json.data.id ? json.data : c)));
+        if (activeCamera?.id === json.data.id) {
+          setActiveCamera(json.data);
+        }
+        setEditingCamera(null);
+      } else {
+        alert(json.error || "Failed to update camera.");
+      }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to update camera.");
+    } finally {
+      setIsEditingCam(false);
+    }
+  };
+
+  // Confirm delete camera handler
+  const confirmDeleteCamera = async () => {
+    if (!camToDelete) return;
+    setIsDeletingCam(true);
+    try {
+      const res = await fetch(`/api/cameras?id=${camToDelete.id}`, { method: "DELETE" });
       if (res.ok) {
-        setCameras((prev) => prev.filter((c) => c.id !== id));
-        if (activeCamera?.id === id) {
+        setCameras((prev) => prev.filter((c) => c.id !== camToDelete.id));
+        if (activeCamera?.id === camToDelete.id) {
           stopCurrentStream();
         }
+        setCamToDelete(null);
+      } else {
+        throw new Error("Failed to delete camera channel.");
       }
-    } catch {
-      alert("Failed to delete camera.");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to delete camera.");
+    } finally {
+      setIsDeletingCam(false);
     }
   };
 
@@ -487,11 +579,11 @@ export default function WebcamDetector() {
           </div>
 
           {/* Target FPS Slider Setting */}
-          <div className="flex items-center gap-2.5 border-l border-gray-200 pl-4">
-            <span className="text-gray-500 font-medium flex items-center gap-1">
-              <Gauge className="w-3.5 h-3.5 text-[#0a1b5c]" /> Target FPS:
+          <div className="flex items-center gap-2.5 border-l border-slate-200 pl-4 font-technical">
+            <span className="text-slate-500 font-medium flex items-center gap-1">
+              <Gauge className="w-3.5 h-3.5 text-slate-700" /> Target FPS:
             </span>
-            <span className="font-semibold text-[#0a1b5c] font-mono">
+            <span className="font-extrabold text-slate-900">
               {targetFps} FPS
             </span>
             <input
@@ -501,40 +593,40 @@ export default function WebcamDetector() {
               step="5"
               value={targetFps}
               onChange={(e) => handleFpsChange(parseInt(e.target.value, 10))}
-              className="w-20 sm:w-24 accent-[#0a1b5c] cursor-pointer"
+              className="w-20 sm:w-24 accent-slate-900 cursor-pointer"
             />
           </div>
         </div>
 
         {/* Class Filter Tabs */}
         {isActive && (
-          <div className="flex items-center gap-1 bg-gray-100 p-0.5 rounded-md border border-gray-200 text-xs">
+          <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs font-semibold">
             <button
               onClick={() => setClassFilter("all")}
-              className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
                 classFilter === "all"
-                  ? "bg-white text-[#0a1b5c] shadow-2xs font-semibold"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-white text-slate-900 shadow-2xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               All
             </button>
             <button
               onClick={() => setClassFilter("helmet")}
-              className={`px-3 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
                 classFilter === "helmet"
-                  ? "bg-white text-emerald-700 shadow-2xs font-semibold"
-                  : "text-gray-600 hover:text-emerald-700"
+                  ? "bg-white text-emerald-700 shadow-2xs font-bold"
+                  : "text-slate-600 hover:text-emerald-700"
               }`}
             >
               <HardHat className="w-3 h-3 text-emerald-600" /> Helmets
             </button>
             <button
               onClick={() => setClassFilter("vest")}
-              className={`px-3 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
                 classFilter === "vest"
-                  ? "bg-white text-amber-700 shadow-2xs font-semibold"
-                  : "text-gray-600 hover:text-amber-700"
+                  ? "bg-white text-amber-700 shadow-2xs font-bold"
+                  : "text-slate-600 hover:text-amber-700"
               }`}
             >
               <Shield className="w-3 h-3 text-amber-600" /> Vests
@@ -548,7 +640,7 @@ export default function WebcamDetector() {
             <>
               <button
                 onClick={handleCaptureSnapshot}
-                className="px-3.5 py-1.5 rounded-md bg-[#0a1b5c] hover:bg-[#0a1b5c]/90 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs"
+                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 {snapshotSaved ? (
                   <>
@@ -564,8 +656,21 @@ export default function WebcamDetector() {
               </button>
 
               <button
+                onClick={toggleFullscreen}
+                className="px-3.5 py-2 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                title={isFullscreen ? "Exit Fullscreen" : "Fullscreen CCTV Monitor"}
+              >
+                {isFullscreen ? (
+                  <Minimize2 className="w-3.5 h-3.5 text-slate-700" />
+                ) : (
+                  <Maximize2 className="w-3.5 h-3.5 text-slate-700" />
+                )}
+                <span className="hidden sm:inline">{isFullscreen ? "Exit" : "Fullscreen"}</span>
+              </button>
+
+              <button
                 onClick={stopCurrentStream}
-                className="px-3.5 py-1.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs"
+                className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <CameraOff className="w-3.5 h-3.5" />
                 <span>Stop Stream</span>
@@ -587,8 +692,32 @@ export default function WebcamDetector() {
         </div>
       )}
 
-      {/* Master Focus Stage Viewport (1-Active-Camera) */}
-      <div className="relative aspect-video max-h-[560px] mx-auto w-full rounded-2xl overflow-hidden bg-slate-950 border border-gray-200 flex items-center justify-center shadow-sm">
+      {/* Master Focus Stage Viewport (1-Active-Camera, Supports Fullscreen) */}
+      <div
+        ref={masterStageRef}
+        className={
+          isFullscreen
+            ? "fixed inset-0 z-50 w-screen h-screen max-h-none rounded-none border-0 bg-black flex items-center justify-center overflow-hidden select-none"
+            : "relative aspect-video max-h-[560px] mx-auto w-full rounded-3xl overflow-hidden bg-slate-950 border border-slate-200 flex items-center justify-center shadow-sm tactical-viewport"
+        }
+      >
+        {/* Viewport Top-Right Fullscreen Toggle Pill */}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="absolute top-3 right-3 z-30 p-2 rounded-xl bg-black/60 hover:bg-black/85 text-white/80 hover:text-white border border-white/20 backdrop-blur-md shadow-md transition-all cursor-pointer"
+          title={isFullscreen ? "Exit Fullscreen (Esc)" : "Fullscreen Monitor"}
+        >
+          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+        </button>
+
+        {/* Fullscreen K3 Violation Alert Banner */}
+        {isFullscreen && lastCompliance?.status === "NON_COMPLIANT" && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-rose-600/95 backdrop-blur-md text-white text-xs font-bold shadow-2xl border border-rose-400 animate-pulse">
+            <AlertCircle className="w-4 h-4 text-white" />
+            <span>K3 VIOLATION: Personnel detected missing required PPE equipment</span>
+          </div>
+        )}
         {/* Device Webcam Video Element */}
         <video
           ref={videoRef}
@@ -748,10 +877,10 @@ export default function WebcamDetector() {
               <button
                 onClick={handleCaptureSnapshot}
                 disabled={snapshotSaved}
-                className={`w-full py-2 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-all ${
+                className={`w-full py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer ${
                   snapshotSaved
                     ? "bg-emerald-600 text-white cursor-default"
-                    : "bg-[#0a1b5c] hover:bg-[#0a1b5c]/90 text-white"
+                    : "bg-slate-900 hover:bg-slate-800 text-white"
                 }`}
               >
                 {snapshotSaved ? (
@@ -774,14 +903,14 @@ export default function WebcamDetector() {
       {/* Bottom CCTV Control Deck (Filmstrip & Channel Management) */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-[#0a1b5c]" />
-          <h3 className="text-sm font-bold text-gray-900">
+          <Layers className="w-4 h-4 text-slate-900" />
+          <h3 className="text-sm font-bold text-slate-900 tracking-tight">
             CCTV Control Deck — Registered Channels ({cameras.length})
           </h3>
         </div>
 
         {isLoadingCameras ? (
-          <div className="py-8 text-center text-xs text-gray-400">
+          <div className="py-8 text-center text-xs text-slate-400 font-medium">
             Loading camera channels...
           </div>
         ) : (
@@ -794,19 +923,19 @@ export default function WebcamDetector() {
                 <div
                   key={cam.id}
                   onClick={() => handleActivateCamera(cam)}
-                  className={`group relative p-4 rounded-xl border transition-all cursor-pointer bg-white shadow-2xs flex flex-col justify-between space-y-3 ${
+                  className={`group relative p-4 rounded-2xl border transition-all cursor-pointer bg-white shadow-2xs flex flex-col justify-between space-y-3 ${
                     isCurrentActive
                       ? "border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20"
-                      : "border-gray-200 hover:border-gray-300 hover:shadow-xs"
+                      : "border-slate-200/80 hover:border-slate-300 hover:shadow-xs"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2.5">
                       <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center ${
                           isCurrentActive
                             ? "bg-emerald-600 text-white shadow-xs"
-                            : "bg-blue-50 text-[#0a1b5c]"
+                            : "bg-slate-100 text-slate-800"
                         }`}
                       >
                         {isDevice ? (
@@ -816,10 +945,10 @@ export default function WebcamDetector() {
                         )}
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-gray-900 group-hover:text-[#0a1b5c] line-clamp-1">
+                        <h4 className="text-xs font-bold text-slate-900 group-hover:text-amber-600 line-clamp-1 transition-colors">
                           {cam.name}
                         </h4>
-                        <span className="text-[11px] text-gray-400 line-clamp-1">
+                        <span className="text-[11px] text-slate-400 line-clamp-1">
                           {cam.location || "General Area"}
                         </span>
                       </div>
@@ -851,9 +980,19 @@ export default function WebcamDetector() {
 
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={(e) => handleDeleteCamera(cam.id, cam.name, e)}
-                        className="p-1 rounded text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        title="Delete camera"
+                        onClick={(e) => handleOpenEditModal(cam, e)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Edit Camera Configuration"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCamToDelete(cam);
+                        }}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Delete Camera"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -881,29 +1020,41 @@ export default function WebcamDetector() {
 
       {/* Add Camera Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-gray-200 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-gray-900">
-                  Register New Camera
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Add local webcam or network RTSP/IP CCTV camera
-                </p>
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSavingCam) setShowAddModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto no-print"
+        >
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl my-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800">
+                  <Plus className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Register New Camera
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Add local webcam or network RTSP/IP CCTV camera
+                  </p>
+                </div>
               </div>
               <button
+                type="button"
                 onClick={() => setShowAddModal(false)}
-                className="p-1 rounded text-gray-400 hover:text-gray-700"
+                disabled={isSavingCam}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAddCamera} className="space-y-4 text-xs">
+            <form onSubmit={handleAddCamera} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-gray-700 font-semibold mb-1">
-                  Camera Name:
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Camera / Feed Name
                 </label>
                 <input
                   type="text"
@@ -911,67 +1062,69 @@ export default function WebcamDetector() {
                   placeholder="e.g. CCTV Gate 1 - North Entrance"
                   value={newCamName}
                   onChange={(e) => setNewCamName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-md border border-gray-300 text-xs focus:ring-1 focus:ring-[#0a1b5c] focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-slate-800 text-xs transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-1">
-                  Camera Type:
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Feed Architecture
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setNewCamType("RTSP")}
-                    className={`py-2 px-3 rounded-md text-xs font-semibold border transition-all flex items-center justify-center gap-2 ${
+                    className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       newCamType === "RTSP"
-                        ? "border-[#0a1b5c] bg-[#0a1b5c] text-white shadow-xs"
-                        : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                        ? "border-slate-900 bg-slate-900 text-white shadow-xs"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                     }`}
                   >
-                    <Radio className="w-3.5 h-3.5" />
-                    <span>RTSP / IP Camera</span>
+                    <Tv className="w-3.5 h-3.5" />
+                    <span>IP / RTSP CCTV</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setNewCamType("DEVICE")}
-                    className={`py-2 px-3 rounded-md text-xs font-semibold border transition-all flex items-center justify-center gap-2 ${
+                    className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       newCamType === "DEVICE"
-                        ? "border-[#0a1b5c] bg-[#0a1b5c] text-white shadow-xs"
-                        : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                        ? "border-slate-900 bg-slate-900 text-white shadow-xs"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                     }`}
                   >
                     <Video className="w-3.5 h-3.5" />
-                    <span>Device Webcam</span>
+                    <span>Local USB / Cam</span>
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-1">
-                  Jobsite Location / Sector:
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Jobsite Location / Sector
                 </label>
                 <input
                   type="text"
                   placeholder="e.g. Sector B - Heavy Equipment Zone"
                   value={newCamLocation}
                   onChange={(e) => setNewCamLocation(e.target.value)}
-                  className="w-full px-3 py-2 rounded-md border border-gray-300 text-xs focus:ring-1 focus:ring-[#0a1b5c] focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-slate-800 text-xs transition-colors"
                 />
               </div>
 
               {newCamType === "RTSP" && (
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-gray-700 font-semibold">
-                      RTSP Stream URL:
+                    <label className="block text-[11px] font-semibold text-slate-700">
+                      RTSP Stream URL
                     </label>
                     <button
                       type="button"
-                      onClick={() => setNewCamUrl("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4")}
-                      className="text-[11px] text-[#0a1b5c] hover:underline font-medium"
+                      onClick={() =>
+                        setNewCamUrl("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4")
+                      }
+                      className="text-[11px] text-amber-600 hover:text-amber-700 hover:underline font-semibold"
                     >
-                      Use Demo Sample URL
+                      Use Demo Stream
                     </button>
                   </div>
                   <input
@@ -980,31 +1133,255 @@ export default function WebcamDetector() {
                     placeholder="rtsp://username:password@ip:554/stream"
                     value={newCamUrl}
                     onChange={(e) => setNewCamUrl(e.target.value)}
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 text-xs font-mono focus:ring-1 focus:ring-[#0a1b5c] focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-slate-800 text-xs font-mono transition-colors"
                   />
-                  <p className="text-[10px] text-gray-400 mt-1">
+                  <p className="text-[10px] text-slate-400 mt-1">
                     Supported: RTSP URLs (`rtsp://`), public CCTV IP streams, or direct network MP4 feeds.
                   </p>
                 </div>
               )}
 
-              <div className="pt-3 flex items-center justify-end gap-2 border-t border-gray-100">
+              <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3.5 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-medium"
+                  disabled={isSavingCam}
+                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={isSavingCam}
-                  className="px-4 py-1.5 rounded-md bg-[#0a1b5c] hover:bg-[#0d327f] text-white text-xs font-semibold shadow-xs disabled:opacity-50"
+                  disabled={isSavingCam || !newCamName.trim()}
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                 >
-                  {isSavingCam ? "Saving..." : "Save Camera"}
+                  {isSavingCam ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                      <span>Saving Camera...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Save Camera</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Camera Modal */}
+      {editingCamera && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isEditingCam) setEditingCamera(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto no-print"
+        >
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl my-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Edit Camera Channel
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Modify stream URL, channel name, or location
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingCamera(null)}
+                disabled={isEditingCam}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditCamera} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Camera / Feed Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Scaffolding Gate 02"
+                  value={editCamName}
+                  onChange={(e) => setEditCamName(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-slate-800 text-xs transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Feed Architecture
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditCamType("RTSP")}
+                    className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      editCamType === "RTSP"
+                        ? "border-slate-900 bg-slate-900 text-white shadow-xs"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Tv className="w-3.5 h-3.5" />
+                    <span>IP / RTSP CCTV</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditCamType("DEVICE")}
+                    className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      editCamType === "DEVICE"
+                        ? "border-slate-900 bg-slate-900 text-white shadow-xs"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>Local USB / Cam</span>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Jobsite Location / Sector
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Sector B - Tower Crane Area"
+                  value={editCamLocation}
+                  onChange={(e) => setEditCamLocation(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-slate-800 text-xs transition-colors"
+                />
+              </div>
+
+              {editCamType === "RTSP" && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-700">
+                      RTSP Stream URL
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditCamUrl("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4")
+                      }
+                      className="text-[11px] text-amber-600 hover:text-amber-700 hover:underline font-semibold"
+                    >
+                      Use Demo Stream
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    placeholder="rtsp://username:password@ip:554/stream"
+                    value={editCamUrl}
+                    onChange={(e) => setEditCamUrl(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-slate-800 text-xs font-mono transition-colors"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Format: rtsp://[user]:[password]@[ip]:[port]/[path]
+                  </p>
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingCamera(null)}
+                  disabled={isEditingCam}
+                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isEditingCam || !editCamName.trim()}
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  {isEditingCam ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                      <span>Saving Changes...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Save Changes</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Camera Confirmation Modal */}
+      {camToDelete && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeletingCam) setCamToDelete(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto no-print"
+        >
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl my-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                Delete Camera Channel?
+              </h3>
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                Are you sure you want to remove{" "}
+                <span className="font-semibold text-slate-800 font-mono">
+                  {camToDelete.name}
+                </span>{" "}
+                from your registered CCTV channels?
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 text-xs font-semibold pt-2">
+              <button
+                type="button"
+                onClick={() => setCamToDelete(null)}
+                disabled={isDeletingCam}
+                className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteCamera}
+                disabled={isDeletingCam}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-xs"
+              >
+                {isDeletingCam ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Channel</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
