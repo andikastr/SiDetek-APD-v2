@@ -1,71 +1,209 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap');
 @import "tailwindcss";
 
-:root {
-  /* Refined Modern Enterprise Light Tokens */
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --surface: #ffffff;
-  --surface-subtle: #f1f5f9;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  
-  /* Primary Deep Slate */
-  --slate-primary: #0f172a;
-  --slate-secondary: #334155;
-  --slate-muted: #64748b;
-  
-  /* Safety K3 Accents */
-  --safety-amber: #f59e0b;
-  --safety-amber-hover: #d97706;
-  --safety-emerald: #10b981;
-  --safety-emerald-hover: #059669;
-  --safety-rose: #ef4444;
-  --safety-rose-hover: #dc2626;
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
-  /* Status Colors */
+:root, [data-theme="light"], .light {
+  /* Enterprise Light Slate Canvas & Clean Surfaces (Default) */
+  --bg-canvas: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-subtle: #f1f5f9;
+  --bg-surface-elevated: #ffffff;
+  
+  /* Borders */
+  --border-subtle: #e2e8f0;
+  --border-hover: rgba(37, 99, 235, 0.4);
+  
+  /* Enterprise Cobalt & Navy Accents */
+  --accent-blue: #2563eb;
+  --accent-cobalt: #1d4ed8;
+  --accent-sky: #3b82f6;
+  
+  /* Safety K3 Status Colors */
   --status-compliant: #10b981;
   --status-partial: #f59e0b;
   --status-violation: #ef4444;
+  
+  /* Typography Text Colors */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  /* Legacy Mapping Compatibility */
+  --background: var(--bg-canvas);
+  --foreground: var(--text-primary);
+  --surface: var(--bg-surface);
+  --surface-subtle: var(--bg-surface-subtle);
+  --border: var(--border-subtle);
+  --border-strong: var(--border-hover);
+}
+
+[data-theme="dark"], .dark {
+  /* Enterprise Navy Obsidian Canvas & Dark Surfaces */
+  --bg-canvas: #090d16;
+  --bg-surface: #0e1626;
+  --bg-surface-subtle: #131c31;
+  --bg-surface-elevated: #18233c;
+  
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(59, 130, 246, 0.35);
+  
+  /* Enterprise Cobalt & Navy Accents */
+  --accent-blue: #2563eb;
+  --accent-cobalt: #1d4ed8;
+  --accent-sky: #3b82f6;
+  
+  /* Safety K3 Status Colors */
+  --status-compliant: #10b981;
+  --status-partial: #f59e0b;
+  --status-violation: #ef4444;
+  
+  /* Typography Text Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  /* Legacy Mapping Compatibility */
+  --background: var(--bg-canvas);
+  --foreground: var(--text-primary);
+  --surface: var(--bg-surface);
+  --surface-subtle: var(--bg-surface-subtle);
+  --border: var(--border-subtle);
+  --border-strong: var(--border-hover);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-surface: var(--surface);
-  --color-surface-subtle: var(--surface-subtle);
-  --color-border: var(--border);
-  --color-border-strong: var(--border-strong);
-  
-  --color-slate-primary: var(--slate-primary);
-  --color-slate-secondary: var(--slate-secondary);
-  --color-slate-muted: var(--slate-muted);
-  
-  --color-safety-amber: var(--safety-amber);
-  --color-safety-emerald: var(--safety-emerald);
-  --color-safety-rose: var(--safety-rose);
-  
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --color-canvas: var(--bg-canvas);
+  --color-surface: var(--bg-surface);
+  --color-surface-subtle: var(--bg-surface-subtle);
+  --color-surface-elevated: var(--bg-surface-elevated);
+
+  --color-border-subtle: var(--border-subtle);
+  --color-border-hover: var(--border-hover);
+
+  --color-enterprise-blue: var(--accent-blue);
+  --color-enterprise-cobalt: var(--accent-cobalt);
+  --color-enterprise-sky: var(--accent-sky);
+
+  --color-status-compliant: var(--status-compliant);
+  --color-status-partial: var(--status-partial);
+  --color-status-violation: var(--status-violation);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: 'DM Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: 'DM Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  overflow-x: hidden;
   letter-spacing: -0.01em;
+  selection-background-color: #2563eb;
+  selection-color: #ffffff;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Technical Monospace figures */
-.font-technical {
-  font-family: var(--font-mono);
+::selection {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* Typography Helpers */
+.font-display {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.font-technical, .font-mono {
+  font-family: 'JetBrains Mono', monospace;
   font-feature-settings: "tnum" 1;
-  letter-spacing: -0.025em;
 }
 
-/* Tactical Stage Corner Brackets */
+/* Clean Matte Surfaces & Solid Buttons */
+.bg-hero-radial {
+  background: transparent;
+}
+
+.bg-hero-radial-subtle {
+  background: transparent;
+}
+
+.bg-card-glow {
+  background: #0e1626;
+}
+
+.border-card-glow {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s ease;
+}
+
+.border-card-glow:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+/* Solid Industrial Enterprise Buttons */
+.btn-caldera-primary {
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid #1d4ed8;
+  transition: all 0.2s ease;
+}
+
+.btn-caldera-primary:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.btn-caldera-glass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-caldera-glass:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Infinite Marquee Animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.mask-marquee {
+  mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+}
+
+/* Clean Corner Viewport Reticles */
 .tactical-viewport {
   position: relative;
 }
@@ -73,42 +211,38 @@ body {
 .tactical-viewport::after {
   content: "";
   position: absolute;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   pointer-events: none;
   z-index: 25;
   transition: all 0.2s ease;
+  border-color: rgba(100, 116, 139, 0.5);
+}
+.dark .tactical-viewport::before,
+.dark .tactical-viewport::after {
+  border-color: rgba(255, 255, 255, 0.3);
 }
 .tactical-viewport::before {
-  top: 8px;
-  left: 8px;
-  border-top: 2px solid rgba(245, 158, 11, 0.7);
-  border-left: 2px solid rgba(245, 158, 11, 0.7);
+  top: 10px;
+  left: 10px;
+  border-top-width: 2px;
+  border-top-style: solid;
+  border-left-width: 2px;
+  border-left-style: solid;
 }
 .tactical-viewport::after {
-  bottom: 8px;
-  right: 8px;
-  border-bottom: 2px solid rgba(245, 158, 11, 0.7);
-  border-right: 2px solid rgba(245, 158, 11, 0.7);
+  bottom: 10px;
+  right: 10px;
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+  border-right-width: 2px;
+  border-right-style: solid;
 }
 
-/* Modern Card with Subtle Elevation */
-.card-modern {
-  background-color: #ffffff;
-  border-radius: 1rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 4px 14px 0 rgba(15, 23, 42, 0.02);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.card-modern:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 2px 6px 0 rgba(15, 23, 42, 0.05), 0 8px 24px 0 rgba(15, 23, 42, 0.04);
-}
-
-/* Sleek Global Scrollbar System (Transparent Track & Rounded Pill) */
+/* Sleek Obsidian Scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: #272738 transparent;
 }
 
 ::-webkit-scrollbar {
@@ -121,19 +255,18 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
+  background-color: #272738;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+  background-color: #3f3f5a;
 }
 
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-/* Hide scrollbar utility */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -142,45 +275,26 @@ body {
   scrollbar-width: none;
 }
 
-/* Print-Ready Official K3 Document Styling */
+/* Print Styling */
 @media print {
   body {
     background-color: #ffffff !important;
     color: #000000 !important;
   }
-
-  .no-print,
-  aside,
-  header,
-  nav,
-  button:not(.print-keep),
-  .floating-drawer-toggle {
+  .no-print, aside, header, nav, button:not(.print-keep), .floating-drawer-toggle {
     display: none !important;
   }
-
   main {
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
   }
-
   .print-only {
     display: block !important;
   }
-
   .print-card {
     border: 1px solid #cbd5e1 !important;
     box-shadow: none !important;
     break-inside: avoid;
-  }
-
-  table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-  }
-
-  th, td {
-    border: 1px solid #e2e8f0 !important;
-    padding: 8px 12px !important;
   }
 }

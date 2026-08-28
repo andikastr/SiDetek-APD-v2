@@ -53,6 +53,7 @@ async def root():
     }
 
 @app.get("/health", tags=["General"])
+@app.get(f"{settings.API_V1_STR}/health", tags=["General"])
 async def health_check():
     uptime_seconds = round(time.time() - start_time, 1)
     engine_ready = False

@@ -195,7 +195,7 @@ export default function Sidebar() {
                   <span
                     className={`w-2 h-2 rounded-full ${
                       aiStatus === "online"
-                        ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                        ? "bg-emerald-500"
                         : aiStatus === "checking"
                         ? "bg-amber-400 animate-pulse"
                         : "bg-rose-500"
@@ -211,7 +211,7 @@ export default function Sidebar() {
               <div
                 className={`w-3 h-3 rounded-full ${
                   aiStatus === "online"
-                    ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                    ? "bg-emerald-500"
                     : aiStatus === "checking"
                     ? "bg-amber-400 animate-pulse"
                     : "bg-rose-500"

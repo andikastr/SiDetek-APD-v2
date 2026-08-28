@@ -277,13 +277,13 @@ export default function ImageDetector() {
   return (
     <div className="space-y-4">
       {/* Top Controls Toolbar */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white px-5 py-3 shadow-2xs flex flex-wrap items-center justify-between gap-4">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0E1626] px-5 py-3 shadow-sm dark:shadow-md flex flex-wrap items-center justify-between gap-4 transition-colors">
         {/* Left: Confidence Threshold Slider */}
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-slate-500 font-medium flex items-center gap-1.5">
-            <Sliders className="w-3.5 h-3.5 text-amber-500" /> Threshold:
+          <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
+            <Sliders className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" /> Threshold:
           </span>
-          <span className="font-extrabold text-slate-900 font-technical">
+          <span className="font-bold text-slate-900 dark:text-white font-mono">
             {Math.round(confidence * 100)}%
           </span>
           <input
@@ -293,43 +293,43 @@ export default function ImageDetector() {
             step="0.05"
             value={confidence}
             onChange={(e) => setConfidence(parseFloat(e.target.value))}
-            className="w-24 sm:w-28 accent-amber-500 cursor-pointer"
+            className="w-24 sm:w-28 accent-[#2563EB] cursor-pointer"
           />
         </div>
 
         {/* Center: Class Filter Tabs */}
         {detectionResult && (
-          <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs font-semibold">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/60 p-1 rounded-lg border border-slate-200 dark:border-slate-700/60 text-xs font-semibold">
             <button
               onClick={() => setClassFilter("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                 classFilter === "all"
-                  ? "bg-white text-slate-900 shadow-2xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               All ({detectionResult.objects.length})
             </button>
             <button
               onClick={() => setClassFilter("helmet")}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
                 classFilter === "helmet"
-                  ? "bg-white text-emerald-700 shadow-2xs font-bold"
-                  : "text-slate-600 hover:text-emerald-700"
+                  ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <HardHat className="w-3 h-3 text-emerald-600" />
+              <HardHat className="w-3 h-3 text-[#2563EB] dark:text-[#3B82F6]" />
               Helmets ({detectionResult.compliance.helmet_count})
             </button>
             <button
               onClick={() => setClassFilter("vest")}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
                 classFilter === "vest"
-                  ? "bg-white text-amber-700 shadow-2xs font-bold"
-                  : "text-slate-600 hover:text-amber-700"
+                  ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <Shield className="w-3 h-3 text-amber-600" />
+              <Shield className="w-3 h-3 text-[#60A5FA]" />
               Vests ({detectionResult.compliance.jacket_count})
             </button>
           </div>
@@ -338,23 +338,23 @@ export default function ImageDetector() {
         {/* Right: View Mode & Trigger Detection */}
         <div className="flex items-center gap-2.5 justify-end">
           {detectionResult && (
-            <div className="flex rounded-xl border border-slate-200 bg-slate-100 p-0.5 text-xs font-semibold">
+            <div className="flex rounded-lg border border-slate-200 dark:border-slate-700/60 bg-slate-100 dark:bg-slate-800/60 p-1 text-xs font-semibold">
               <button
                 onClick={() => setViewMode("interactive")}
-                className={`px-3 py-1 rounded-lg text-xs transition-colors cursor-pointer ${
+                className={`px-3 py-1 rounded-md text-xs transition-colors cursor-pointer ${
                   viewMode === "interactive"
-                    ? "bg-white text-slate-900 shadow-2xs font-bold"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 Vector
               </button>
               <button
                 onClick={() => setViewMode("annotated")}
-                className={`px-3 py-1 rounded-lg text-xs transition-colors cursor-pointer ${
+                className={`px-3 py-1 rounded-md text-xs transition-colors cursor-pointer ${
                   viewMode === "annotated"
-                    ? "bg-white text-slate-900 shadow-2xs font-bold"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 AI Plot
@@ -365,10 +365,10 @@ export default function ImageDetector() {
           {previewUrl && (
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700/60 bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
               title="Select another worker photo"
             >
-              <ImagePlus className="w-3.5 h-3.5 text-slate-700" />
+              <ImagePlus className="w-3.5 h-3.5 text-[#2563EB] dark:text-[#3B82F6]" />
               <span>Change Image</span>
             </button>
           )}
@@ -376,16 +376,16 @@ export default function ImageDetector() {
           <button
             onClick={handleRunDetection}
             disabled={!selectedFile || isDetecting}
-            className="px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-xs cursor-pointer"
+            className="px-5 py-2 rounded-lg btn-caldera-primary text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             {isDetecting ? (
               <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                 <span>Processing...</span>
               </>
             ) : (
               <>
-                <Scan className="w-3.5 h-3.5 text-amber-400" />
+                <Scan className="w-3.5 h-3.5" />
                 <span>Run Detection</span>
               </>
             )}
@@ -394,8 +394,8 @@ export default function ImageDetector() {
       </div>
 
       {errorMsg && (
-        <div className="p-3.5 rounded-2xl border border-rose-200 bg-rose-50 text-rose-800 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+        <div className="p-3.5 rounded-lg border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
@@ -410,10 +410,10 @@ export default function ImageDetector() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`relative rounded-3xl overflow-hidden min-h-[560px] flex items-center justify-center transition-all select-none ${
+        className={`relative rounded-xl overflow-hidden min-h-[560px] flex items-center justify-center transition-all select-none ${
           !previewUrl
-            ? "border-2 border-dashed border-slate-300 hover:border-slate-800 bg-white hover:bg-slate-50/70 shadow-xs cursor-pointer"
-            : `border border-slate-200 bg-slate-950 shadow-sm tactical-viewport ${
+            ? "border-2 border-dashed border-slate-300 dark:border-slate-700/80 hover:border-[#2563EB]/60 dark:hover:border-[#3B82F6]/60 bg-white/80 dark:bg-[#0E1626]/80 hover:bg-slate-50 dark:hover:bg-[#111C30] shadow-sm dark:shadow-md cursor-pointer"
+            : `border border-slate-200 dark:border-slate-800 bg-[#090D16] shadow-xl tactical-viewport ${
                 zoomScale > 1 ? (isDragging ? "cursor-grabbing" : "cursor-grab") : "cursor-default"
               }`
         }`}
@@ -427,58 +427,58 @@ export default function ImageDetector() {
         />
 
         {!previewUrl ? (
-          /* Clean Enterprise Dropzone */
+          /* Dropzone */
           <div
             onClick={() => fileInputRef.current?.click()}
             className="group w-full h-full min-h-[560px] p-8 sm:p-14 flex flex-col items-center justify-center text-center space-y-4"
           >
             {/* Elegant Icon Badge */}
-            <div className="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 text-slate-800 flex items-center justify-center shadow-xs group-hover:scale-105 group-hover:bg-slate-900 group-hover:text-amber-400 transition-all">
-              <UploadCloud className="w-8 h-8 transition-colors" />
+            <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-slate-800 dark:text-white flex items-center justify-center shadow-sm dark:shadow-md group-hover:scale-105 group-hover:border-[#2563EB]/60 dark:group-hover:border-[#3B82F6]/60 group-hover:text-[#2563EB] dark:group-hover:text-[#3B82F6] transition-all">
+              <UploadCloud className="w-7 h-7 transition-colors text-[#2563EB] dark:text-[#3B82F6]" />
             </div>
 
             <div className="max-w-md space-y-1.5 pt-1">
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight font-display transition-colors">
                 Drag and drop worker image here
               </h3>
-              <p className="text-xs text-slate-500">
-                or click anywhere in this area to select from your device
+              <p className="text-xs text-slate-500 dark:text-slate-400 transition-colors">
+                or click anywhere in this area to select high-res photo from your device
               </p>
             </div>
 
-            {/* Clean Single Action Button */}
+            {/* Solid Enterprise Action Button */}
             <div className="pt-2">
               <button
                 type="button"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs transition-colors pointer-events-none"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg btn-caldera-primary text-xs font-semibold uppercase tracking-wider transition-all pointer-events-none shadow-sm"
               >
-                <FolderOpen className="w-4 h-4 text-amber-400" />
+                <FolderOpen className="w-4 h-4" />
                 <span>Browse Image File</span>
               </button>
             </div>
 
             {/* Format & Resolution Specs */}
-            <div className="pt-4 flex items-center gap-2 text-[11px] text-slate-400 font-medium font-technical">
-              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px]">JPG</span>
-              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px]">PNG</span>
-              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px]">WEBP</span>
-              <span className="text-slate-300">•</span>
+            <div className="pt-4 flex items-center gap-2 text-[11px] text-slate-400 font-medium font-mono">
+              <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] border border-slate-200 dark:border-slate-700/50">JPG</span>
+              <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] border border-slate-200 dark:border-slate-700/50">PNG</span>
+              <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] border border-slate-200 dark:border-slate-700/50">WEBP</span>
+              <span className="text-slate-400 dark:text-slate-600">•</span>
               <span>Up to 4K resolution (max 15MB)</span>
             </div>
           </div>
         ) : (
           /* Loaded Image & Interactive SVG Viewport with Zoom/Pan GPU Transform */
-          <div className="relative w-full h-full min-h-[560px] flex items-center justify-center bg-slate-950 p-4 overflow-hidden">
+          <div className="relative w-full h-full min-h-[560px] flex items-center justify-center bg-[#090D16] p-4 overflow-hidden">
             {/* Top-Left Floating Change Photo Pill */}
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="absolute top-3 left-3 z-20 px-3.5 py-1.5 rounded-xl bg-black/75 hover:bg-black/90 backdrop-blur-md text-white text-xs font-semibold border border-white/20 transition-all flex items-center gap-2 shadow-lg cursor-pointer group no-drag"
+              className="absolute top-3 left-3 z-20 px-4 py-2 rounded-full bg-[#0E1626]/90 hover:bg-slate-800 backdrop-blur-xl text-white text-xs font-semibold border border-slate-700/80 hover:border-[#3B82F6]/60 transition-all flex items-center gap-2 shadow-md cursor-pointer group no-drag"
               title="Click to upload another worker photo"
             >
-              <ImagePlus className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+              <ImagePlus className="w-3.5 h-3.5 text-[#3B82F6] group-hover:scale-110 transition-transform" />
               <span>Change Photo</span>
               {selectedFile && (
-                <span className="text-[11px] text-gray-300 font-normal max-w-[140px] truncate border-l border-white/20 pl-2">
+                <span className="text-[11px] text-slate-300 font-normal max-w-[140px] truncate border-l border-slate-700 pl-2">
                   {selectedFile.name}
                 </span>
               )}
@@ -602,7 +602,7 @@ export default function ImageDetector() {
 
             {/* Bottom-Left Image Specs & Latency */}
             {detectionResult && (
-              <div className="absolute bottom-3 left-3 flex items-center gap-2 text-[11px] text-white/80 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-sm font-technical no-drag">
+              <div className="absolute bottom-3 left-3 flex items-center gap-2 text-[11px] text-white/80 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm font-technical no-drag">
                 <span>
                   {detectionResult.image_width}×{detectionResult.image_height}
                 </span>
@@ -613,8 +613,8 @@ export default function ImageDetector() {
 
             {/* Subtle "Ctrl + Scroll to Zoom" Floating Hint (Google Maps style) */}
             {showCtrlHint && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 px-4 py-2.5 rounded-2xl bg-slate-950/90 text-white text-xs font-semibold backdrop-blur-md shadow-2xl border border-white/20 pointer-events-none transition-all flex items-center gap-2 font-technical">
-                <span className="px-1.5 py-0.5 rounded bg-white/20 text-[11px] font-bold text-amber-400 font-mono">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 px-4 py-2.5 rounded-lg bg-slate-950/90 text-white text-xs font-semibold backdrop-blur-md shadow-2xl border border-white/20 pointer-events-none transition-all flex items-center gap-2 font-technical">
+                <span className="px-1.5 py-0.5 rounded-md bg-white/20 text-[11px] font-bold text-amber-400 font-mono">
                   Ctrl
                 </span>
                 <span>+ Scroll to zoom photo</span>
@@ -622,9 +622,9 @@ export default function ImageDetector() {
             )}
 
             {/* Floating Zoom & Pan Control Dock */}
-            <div className="zoom-dock absolute bottom-3 right-14 z-20 flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-white/20 shadow-lg text-xs font-technical text-white no-drag">
+            <div className="zoom-dock absolute bottom-3 right-14 z-20 flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/20 shadow-lg text-xs font-technical text-white no-drag">
               <span className="text-[11px] font-technical text-white/70 flex items-center gap-1.5 border-r border-white/20 pr-2 select-none">
-                <span className="px-1.5 py-0.5 rounded bg-white/15 text-white font-bold text-[9px] font-mono">
+                <span className="px-1.5 py-0.5 rounded-md bg-white/15 text-white font-bold text-[9px] font-mono">
                   Ctrl
                 </span>
                 <span className="hidden sm:inline">+ Scroll</span>
@@ -640,7 +640,7 @@ export default function ImageDetector() {
                   });
                 }}
                 disabled={zoomScale <= 1}
-                className="p-1 rounded-lg hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="p-1 rounded-md hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 title="Zoom Out"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
@@ -656,7 +656,7 @@ export default function ImageDetector() {
                   setZoomScale((prev) => Math.min(4, Math.round((prev + 0.25) * 100) / 100));
                 }}
                 disabled={zoomScale >= 4}
-                className="p-1 rounded-lg hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="p-1 rounded-md hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 title="Zoom In"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
@@ -686,15 +686,15 @@ export default function ImageDetector() {
                 {/* Drawer Toggle Tab */}
                 <button
                   onClick={() => setDrawerOpen(!drawerOpen)}
-                  className="self-center bg-white hover:bg-slate-50 text-slate-900 p-2 rounded-l-xl border-y border-l border-slate-200 shadow-md flex items-center gap-1 text-xs font-semibold cursor-pointer"
+                  className="self-center bg-[#0E1626] hover:bg-slate-800 text-white p-2 rounded-l-lg border-y border-l border-slate-700/80 shadow-md flex items-center gap-1 text-xs font-semibold cursor-pointer transition-colors"
                   title={drawerOpen ? "Close Drawer" : "Open Drawer"}
                 >
                   {drawerOpen ? (
-                    <ChevronRight className="w-4 h-4 text-slate-700" />
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
                   ) : (
                     <div className="flex items-center gap-1.5 py-1">
-                      <ChevronLeft className="w-4 h-4 text-slate-700" />
-                      <span className="[writing-mode:vertical-rl] rotate-180 uppercase tracking-wider text-[10px] font-bold text-slate-900">
+                      <ChevronLeft className="w-4 h-4 text-[#3B82F6]" />
+                      <span className="[writing-mode:vertical-rl] rotate-180 uppercase tracking-wider text-[10px] font-mono font-bold text-white">
                         Audit ({detectionResult.compliance.compliance_score}%)
                       </span>
                     </div>
@@ -702,12 +702,12 @@ export default function ImageDetector() {
                 </button>
 
                 {/* Drawer Content */}
-                <div className="w-72 sm:w-80 bg-white/95 backdrop-blur-md border border-slate-200 rounded-r-2xl p-5 shadow-xl flex flex-col justify-between overflow-y-auto space-y-4">
+                <div className="w-72 sm:w-80 bg-[#0E1626] border border-slate-700/80 rounded-r-xl p-5 shadow-xl flex flex-col justify-between overflow-y-auto space-y-4 text-white">
                   <div className="space-y-4">
                     {/* Header */}
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                        <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block tracking-wider">
                           K3 Status
                         </span>
                         <div className="mt-1">
@@ -715,23 +715,23 @@ export default function ImageDetector() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 font-bold block tracking-wider">
+                        <span className="text-[10px] text-slate-400 font-mono font-bold block tracking-wider">
                           SCORE
                         </span>
-                        <span className="text-2xl font-extrabold text-slate-900 font-technical">
+                        <span className="text-2xl font-extrabold text-white font-mono">
                           {detectionResult.compliance.compliance_score}%
                         </span>
                       </div>
                     </div>
 
                     {/* Subtabs Switcher: Summary vs Equipment List */}
-                    <div className="flex rounded-xl bg-slate-100 p-0.5 text-xs font-semibold">
+                    <div className="flex rounded-lg bg-slate-800/60 border border-slate-700/60 p-1 text-xs font-semibold">
                       <button
                         onClick={() => setDrawerTab("summary")}
-                        className={`flex-1 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
+                        className={`flex-1 py-1.5 rounded-md transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
                           drawerTab === "summary"
-                            ? "bg-white text-slate-900 shadow-2xs font-bold"
-                            : "text-slate-600 hover:text-slate-900"
+                            ? "bg-slate-700 text-white font-bold shadow-xs"
+                            : "text-slate-400 hover:text-white"
                         }`}
                       >
                         <Layers className="w-3.5 h-3.5" />
@@ -739,10 +739,10 @@ export default function ImageDetector() {
                       </button>
                       <button
                         onClick={() => setDrawerTab("objects")}
-                        className={`flex-1 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
+                        className={`flex-1 py-1.5 rounded-md transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
                           drawerTab === "objects"
-                            ? "bg-white text-slate-900 shadow-2xs font-bold"
-                            : "text-slate-600 hover:text-slate-900"
+                            ? "bg-slate-700 text-white font-bold shadow-xs"
+                            : "text-slate-400 hover:text-white"
                         }`}
                       >
                         <ListFilter className="w-3.5 h-3.5" />
@@ -753,26 +753,26 @@ export default function ImageDetector() {
                     {drawerTab === "summary" ? (
                       /* Summary Tab */
                       <div className="space-y-4">
-                        <p className="text-xs text-slate-600 leading-relaxed">
+                        <p className="text-xs text-slate-300 leading-relaxed">
                           {detectionResult.compliance.message}
                         </p>
 
                         {/* Count Boxes */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
-                            <span className="text-[11px] font-bold text-emerald-800 flex items-center gap-1.5">
-                              <HardHat className="w-3.5 h-3.5 text-emerald-600" /> Helmets
+                          <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/60">
+                            <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
+                              <HardHat className="w-3.5 h-3.5 text-[#3B82F6]" /> Helmets
                             </span>
-                            <span className="text-xl font-extrabold text-slate-900 block mt-1 font-technical">
+                            <span className="text-xl font-bold text-white block mt-1 font-mono">
                               {detectionResult.compliance.helmet_count}
                             </span>
                           </div>
 
-                          <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/80">
-                            <span className="text-[11px] font-bold text-amber-800 flex items-center gap-1.5">
-                              <Shield className="w-3.5 h-3.5 text-amber-600" /> Vests
+                          <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/60">
+                            <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
+                              <Shield className="w-3.5 h-3.5 text-[#60A5FA]" /> Vests
                             </span>
-                            <span className="text-xl font-extrabold text-slate-900 block mt-1 font-technical">
+                            <span className="text-xl font-bold text-white block mt-1 font-mono">
                               {detectionResult.compliance.jacket_count}
                             </span>
                           </div>
@@ -780,14 +780,14 @@ export default function ImageDetector() {
 
                         {/* Recommendations */}
                         {detectionResult.compliance.recommendations.length > 0 && (
-                          <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                            <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
                               Action Items:
                             </span>
-                            <ul className="space-y-1.5 text-xs text-slate-600">
+                            <ul className="space-y-1.5 text-xs text-slate-300">
                               {detectionResult.compliance.recommendations.map((rec, idx) => (
                                 <li key={idx} className="flex items-start gap-1.5">
-                                  <span className="text-amber-500 font-bold">•</span>
+                                  <span className="text-[#3B82F6] font-bold">•</span>
                                   <span>{rec}</span>
                                 </li>
                               ))}
@@ -814,18 +814,18 @@ export default function ImageDetector() {
                                 setSelectedObjectIdx(idx);
                               }}
                               onMouseLeave={() => setHoveredBox(null)}
-                              className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between text-xs ${
+                              className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-xs ${
                                 isSelected
-                                  ? "border-amber-500 bg-amber-50/50 shadow-2xs"
-                                  : "border-slate-200/80 bg-white hover:border-slate-300 hover:bg-slate-50"
+                                  ? "border-[#3B82F6] bg-[#2563EB]/15 shadow-md"
+                                  : "border-slate-800 bg-slate-800/40 hover:border-slate-700 hover:bg-slate-800/70"
                               }`}
                             >
                               <div className="flex items-center gap-2">
                                 <div
-                                  className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                                  className={`w-7 h-7 rounded-md flex items-center justify-center ${
                                     isHelmet
-                                      ? "bg-emerald-100 text-emerald-800"
-                                      : "bg-amber-100 text-amber-800"
+                                      ? "bg-emerald-500/20 text-emerald-400"
+                                      : "bg-amber-500/20 text-amber-400"
                                   }`}
                                 >
                                   {isHelmet ? (
@@ -835,22 +835,22 @@ export default function ImageDetector() {
                                   )}
                                 </div>
                                 <div>
-                                  <span className="font-bold text-slate-900 block leading-tight">
+                                  <span className="font-bold text-white block leading-tight">
                                     {obj.label}
                                   </span>
-                                  <span className="text-[10px] text-slate-400 font-technical block">
+                                  <span className="text-[10px] text-slate-400 font-mono block">
                                     {Math.round(obj.bbox.width)}×{Math.round(obj.bbox.height)} px
                                   </span>
                                 </div>
                               </div>
 
                               <div className="flex items-center gap-2">
-                                <span className="font-extrabold text-slate-900 font-technical">
+                                <span className="font-extrabold text-white font-mono">
                                   {Math.round(obj.confidence * 100)}%
                                 </span>
                                 <Crosshair
                                   className={`w-3.5 h-3.5 transition-transform ${
-                                    isSelected ? "text-amber-600 scale-125" : "text-slate-400"
+                                    isSelected ? "text-[#3B82F6] scale-125" : "text-slate-400"
                                   }`}
                                 />
                               </div>
@@ -862,14 +862,14 @@ export default function ImageDetector() {
                   </div>
 
                   {/* Save Button */}
-                  <div className="pt-3 border-t border-slate-100">
+                  <div className="pt-3 border-t border-slate-800">
                     <button
                       onClick={handleSaveAudit}
                       disabled={isSaving || saveSuccess}
-                      className={`w-full py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer ${
+                      className={`w-full py-2.5 px-4 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer ${
                         saveSuccess
                           ? "bg-emerald-600 text-white cursor-default"
-                          : "bg-slate-900 hover:bg-slate-800 text-white"
+                          : "btn-caldera-primary"
                       }`}
                     >
                       {saveSuccess ? (
@@ -879,12 +879,12 @@ export default function ImageDetector() {
                         </>
                       ) : isSaving ? (
                         <>
-                          <RefreshCw className="w-4 h-4 animate-spin text-amber-400" />
+                          <RefreshCw className="w-4 h-4 animate-spin" />
                           <span>Saving...</span>
                         </>
                       ) : (
                         <>
-                          <Save className="w-4 h-4 text-amber-400" />
+                          <Save className="w-4 h-4" />
                           <span>Save to Audit Log</span>
                         </>
                       )}

@@ -16,29 +16,29 @@ export default function ComplianceBadge({
     COMPLIANT: {
       label: "Compliant",
       icon: CheckCircle2,
-      dot: "bg-emerald-500",
-      border: "border-emerald-200/80",
-      bg: "bg-emerald-50/80",
-      text: "text-emerald-800",
-      iconColor: "text-emerald-600",
+      dot: "bg-slate-400 dark:bg-slate-300",
+      border: "border-slate-300 dark:border-slate-700",
+      bg: "bg-slate-100 dark:bg-slate-800/70",
+      text: "text-slate-800 dark:text-slate-200",
+      iconColor: "text-slate-700 dark:text-slate-300",
     },
     PARTIAL: {
       label: "Partial Warning",
       icon: AlertTriangle,
-      dot: "bg-amber-500",
-      border: "border-amber-200/80",
-      bg: "bg-amber-50/80",
-      text: "text-amber-900",
-      iconColor: "text-amber-600",
+      dot: "bg-slate-400",
+      border: "border-slate-200 dark:border-slate-700/80",
+      bg: "bg-slate-100/80 dark:bg-slate-800/50",
+      text: "text-slate-700 dark:text-slate-300",
+      iconColor: "text-slate-500 dark:text-slate-400",
     },
     NON_COMPLIANT: {
       label: "Safety Violation",
       icon: XCircle,
-      dot: "bg-rose-500",
-      border: "border-rose-200/80",
-      bg: "bg-rose-50/80",
-      text: "text-rose-900",
-      iconColor: "text-rose-600",
+      dot: "bg-slate-400 dark:bg-slate-500",
+      border: "border-slate-200 dark:border-slate-700/80",
+      bg: "bg-slate-100/80 dark:bg-slate-800/50",
+      text: "text-slate-600 dark:text-slate-400",
+      iconColor: "text-slate-500 dark:text-slate-400",
     },
   };
 
@@ -59,13 +59,9 @@ export default function ComplianceBadge({
 
   return (
     <span
-      className={`inline-flex items-center rounded-lg border shadow-2xs transition-all ${config.border} ${config.bg} ${config.text} ${sizeClasses[size]}`}
+      className={`inline-flex items-center rounded-md border ${config.border} ${config.bg} ${config.text} ${sizeClasses[size]} tracking-tight transition-all font-mono`}
     >
-      {showIcon ? (
-        <Icon className={`${iconSizes[size]} ${config.iconColor} flex-shrink-0`} />
-      ) : (
-        <span className={`w-1.5 h-1.5 rounded-full ${config.dot} flex-shrink-0`} />
-      )}
+      {showIcon && <Icon className={`${iconSizes[size]} ${config.iconColor} flex-shrink-0`} />}
       <span>{config.label}</span>
     </span>
   );

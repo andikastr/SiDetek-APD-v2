@@ -50,16 +50,22 @@ export default function AnalyticsPage() {
   const jacketRatio = totalPPE > 0 ? Math.round(((data?.totalJackets || 0) / totalPPE) * 100) : 50;
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto">
       {/* Clean Subtitle Bar */}
-      <div className="pb-3 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <p className="text-xs text-slate-500">
-          Statistical breakdown of personal protective equipment adoption and jobsite safety performance.
-        </p>
+      <div className="pb-4 border-b border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
+        <div>
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight font-display uppercase transition-colors">
+            Safety Analytics &amp; Intelligence
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 transition-colors">
+            Statistical breakdown of personal protective equipment adoption and jobsite safety performance.
+          </p>
+        </div>
 
-        <span className="text-[11px] text-slate-500 font-technical">
-          Standard: ISO 45001 &amp; OSHA 1926
-        </span>
+        <div className="flex items-center gap-2 font-mono text-[11px] text-slate-500 dark:text-slate-400 transition-colors">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+          <span>STANDARDS: ISO 45001 &amp; OSHA 1926</span>
+        </div>
       </div>
 
       {/* KPI StatCards Grid */}
@@ -76,14 +82,14 @@ export default function AnalyticsPage() {
           value={isLoading ? "—" : `${data?.avgScore ?? 0}/100`}
           subtitle="Cumulative session mean"
           icon={Activity}
-          variant="default"
+          variant="orange"
         />
         <StatCard
           title="Engine Latency"
-          value={isLoading ? "—" : `${data?.avgLatencyMs ?? 0} ms`}
+          value={isLoading ? "—" : `${data?.avgLatencyMs ? Math.round(data.avgLatencyMs) : 0} ms`}
           subtitle="Pure ONNX CPU latency"
           icon={Zap}
-          variant="amber"
+          variant="default"
         />
         <StatCard
           title="Full Compliance"
@@ -97,75 +103,78 @@ export default function AnalyticsPage() {
       {/* Distribution & APD Volume Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Compliance Distribution (7 cols) */}
-        <div className="lg:col-span-7 rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6">
+        <div className="lg:col-span-7 rounded-xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0E1626] p-6 sm:p-7 shadow-sm dark:shadow-md space-y-6 text-slate-900 dark:text-white transition-colors">
           <div>
-            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight font-display uppercase transition-colors">
               Jobsite Compliance Distribution
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 transition-colors">
               Breakdown of inspection outcomes across compliant, partial, and violation sessions
             </p>
           </div>
 
-          {/* Color Segments Bar */}
+          {/* Unified Enterprise Blue Segments Bar */}
           <div className="space-y-2">
-            <div className="h-3.5 w-full rounded-full overflow-hidden flex bg-slate-100 shadow-inner">
+            <div className="h-3.5 w-full rounded-md overflow-hidden flex bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 transition-colors">
               <div
                 style={{ width: `${compliantPercent}%` }}
-                className="bg-emerald-500 transition-all duration-500"
+                className="bg-[#2563EB] transition-all duration-500"
                 title={`Compliant: ${compliantPercent}%`}
               />
               <div
                 style={{ width: `${partialPercent}%` }}
-                className="bg-amber-500 transition-all duration-500"
+                className="bg-[#60A5FA] transition-all duration-500"
                 title={`Partial: ${partialPercent}%`}
               />
               <div
                 style={{ width: `${violationPercent}%` }}
-                className="bg-rose-500 transition-all duration-500"
+                className="bg-slate-400 dark:bg-slate-600 transition-all duration-500"
                 title={`Violation: ${violationPercent}%`}
               />
             </div>
-            <div className="flex justify-between text-[11px] text-slate-400 font-technical font-medium">
-              <span>0% Threshold</span>
-              <span>100% Benchmark</span>
+            <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+              <span>0% THRESHOLD</span>
+              <span>100% BENCHMARK</span>
             </div>
           </div>
 
-          {/* 3 Metric Summary Boxes */}
+          {/* 3 Unified Metric Summary Boxes */}
           <div className="grid grid-cols-3 gap-3 pt-2 text-center">
-            <div className="p-4 rounded-2xl border border-emerald-200/80 bg-emerald-50/50">
-              <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block">
+            <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+              <span className="text-[10px] font-mono font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
                 Compliant
               </span>
-              <span className="text-2xl font-extrabold text-slate-900 mt-1 block font-technical">
+              <span className="text-2xl font-bold text-slate-900 dark:text-white mt-1.5 block font-mono">
                 {data?.compliantCount ?? 0}
               </span>
-              <span className="text-xs text-emerald-700 font-semibold mt-0.5 block font-technical">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 block font-mono">
                 {compliantPercent}%
               </span>
             </div>
 
-            <div className="p-4 rounded-2xl border border-amber-200/80 bg-amber-50/50">
-              <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider block">
-                Partial Warning
+            <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+              <span className="text-[10px] font-mono font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#60A5FA]" />
+                Partial
               </span>
-              <span className="text-2xl font-extrabold text-slate-900 mt-1 block font-technical">
+              <span className="text-2xl font-bold text-slate-900 dark:text-white mt-1.5 block font-mono">
                 {data?.partialCount ?? 0}
               </span>
-              <span className="text-xs text-amber-700 font-semibold mt-0.5 block font-technical">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 block font-mono">
                 {partialPercent}%
               </span>
             </div>
 
-            <div className="p-4 rounded-2xl border border-rose-200/80 bg-rose-50/50">
-              <span className="text-[11px] font-bold text-rose-800 uppercase tracking-wider block">
+            <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+              <span className="text-[10px] font-mono font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600" />
                 Violation
               </span>
-              <span className="text-2xl font-extrabold text-slate-900 mt-1 block font-technical">
+              <span className="text-2xl font-bold text-slate-900 dark:text-white mt-1.5 block font-mono">
                 {data?.violationCount ?? 0}
               </span>
-              <span className="text-xs text-rose-700 font-semibold mt-0.5 block font-technical">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 block font-mono">
                 {violationPercent}%
               </span>
             </div>
@@ -173,13 +182,13 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Right: APD Volume (5 cols) */}
-        <div className="lg:col-span-5 rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs flex flex-col justify-between space-y-6">
+        <div className="lg:col-span-5 rounded-xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0E1626] p-6 sm:p-7 shadow-sm dark:shadow-md flex flex-col justify-between space-y-6 text-slate-900 dark:text-white transition-colors">
           <div className="space-y-6">
             <div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight font-display uppercase transition-colors">
                 Verified PPE Equipment Volume
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 transition-colors">
                 Cumulative counts of detected safety helmets vs reflective vests
               </p>
             </div>
@@ -187,17 +196,17 @@ export default function AnalyticsPage() {
             <div className="space-y-5 pt-1 text-xs">
               {/* Helmet Volume Bar */}
               <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-semibold text-slate-700">
-                  <span className="flex items-center gap-2 text-emerald-800">
-                    <HardHat className="w-4 h-4 text-emerald-600" /> Safety Helmets
+                <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                  <span className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
+                    <HardHat className="w-4 h-4 text-[#2563EB] dark:text-[#3B82F6]" /> Safety Helmets
                   </span>
-                  <span className="font-extrabold text-slate-900 font-technical">
+                  <span className="font-bold text-slate-900 dark:text-white">
                     {data?.totalHelmets ?? 0} units ({helmetRatio}%)
                   </span>
                 </div>
-                <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-3.5 w-full rounded-md bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    className="h-full bg-[#2563EB] rounded-md transition-all duration-500"
                     style={{ width: `${helmetRatio}%` }}
                   />
                 </div>
@@ -205,17 +214,17 @@ export default function AnalyticsPage() {
 
               {/* Jacket Volume Bar */}
               <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-semibold text-slate-700">
-                  <span className="flex items-center gap-2 text-amber-800">
-                    <Shield className="w-4 h-4 text-amber-600" /> Reflective Vests
+                <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                  <span className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
+                    <Shield className="w-4 h-4 text-[#60A5FA]" /> Reflective Vests
                   </span>
-                  <span className="font-extrabold text-slate-900 font-technical">
+                  <span className="font-bold text-slate-900 dark:text-white">
                     {data?.totalJackets ?? 0} units ({jacketRatio}%)
                   </span>
                 </div>
-                <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-3.5 w-full rounded-md bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 overflow-hidden">
                   <div
-                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                    className="h-full bg-[#60A5FA] rounded-md transition-all duration-500"
                     style={{ width: `${jacketRatio}%` }}
                   />
                 </div>
@@ -223,51 +232,51 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between font-technical">
-            <span className="font-semibold text-slate-700">Total Verified PPE:</span>
-            <span className="font-extrabold text-slate-900 text-sm">{totalPPE} units</span>
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between font-mono">
+            <span className="font-semibold text-slate-700 dark:text-slate-300">TOTAL VERIFIED PPE:</span>
+            <span className="font-bold text-slate-900 dark:text-white text-base font-mono">{totalPPE} UNITS</span>
           </div>
         </div>
       </div>
 
       {/* Safety SOP Best Practices Card */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
-            <ShieldAlert className="w-4.5 h-4.5" />
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0E1626] p-6 sm:p-7 shadow-sm dark:shadow-md text-slate-900 dark:text-white transition-colors">
+        <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800/80 pb-4">
+          <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 flex items-center justify-center">
+            <ShieldAlert className="w-4 h-4 text-[#2563EB] dark:text-[#3B82F6]" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white font-display uppercase transition-colors">
               K3 Automated Recommendation Engine
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 transition-colors">
               Automated standard operating procedure reminders based on recent audit trends
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 text-xs">
-          <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80">
-            <span className="font-bold text-slate-900 block mb-1">
-              1. Entry Point Checkpoint
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-5 text-xs">
+          <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+            <span className="font-bold text-slate-900 dark:text-white block mb-1 font-mono text-[11px]">
+              1. ENTRY POINT CHECKPOINT
             </span>
-            <p className="text-slate-500 text-[11px] leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">
               Ensure turnstiles and jobsite entrance gates run automated camera scans before granting perimeter access to subcontractors.
             </p>
           </div>
-          <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80">
-            <span className="font-bold text-slate-900 block mb-1">
-              2. Nightshift Visibility
+          <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+            <span className="font-bold text-slate-900 dark:text-white block mb-1 font-mono text-[11px]">
+              2. NIGHTSHIFT VISIBILITY
             </span>
-            <p className="text-slate-500 text-[11px] leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">
               Workers near tower cranes and excavation machinery must wear EN ISO 20471 Class 2 or 3 retroreflective vests at all times.
             </p>
           </div>
-          <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80">
-            <span className="font-bold text-slate-900 block mb-1">
-              3. Chin Strap Fastening
+          <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+            <span className="font-bold text-slate-900 dark:text-white block mb-1 font-mono text-[11px]">
+              3. CHIN STRAP FASTENING
             </span>
-            <p className="text-slate-500 text-[11px] leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">
               For elevated scaffolding and tower work, helmets must have 4-point chin straps secured per EN 397 / EN 12492 standards.
             </p>
           </div>

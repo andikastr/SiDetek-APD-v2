@@ -1,8 +1,18 @@
 import { DetectionResponse } from "@/types";
 
-const AI_URL = process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000";
-const WS_URL = process.env.NEXT_PUBLIC_AI_ENGINE_WS_URL || "ws://localhost:8000/api/v1/ws/stream";
-const RTSP_WS_URL = process.env.NEXT_PUBLIC_AI_ENGINE_RTSP_WS_URL || "ws://localhost:8000/api/v1/ws/rtsp";
+const AI_URL = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8100").replace(/\/+$/, "");
+
+function getWebSocketUrl(path: string, envOverride?: string): string {
+  if (envOverride) return envOverride;
+  const isSecure = AI_URL.startsWith("https://");
+  const host = AI_URL.replace(/^https?:\/\//, "");
+  const wsProtocol = isSecure ? "wss://" : "ws://";
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return `${wsProtocol}${host}${cleanPath}`;
+}
+
+const WS_URL = getWebSocketUrl("/api/v1/ws/stream", process.env.NEXT_PUBLIC_AI_ENGINE_WS_URL);
+const RTSP_WS_URL = getWebSocketUrl("/api/v1/ws/rtsp", process.env.NEXT_PUBLIC_AI_ENGINE_RTSP_WS_URL);
 
 export async function detectPPE(
   file: File,
