@@ -55,7 +55,7 @@ SiDetek-APD/
 cd ai-engine
 
 # Jalankan server FastAPI menggunakan environment bawaan:
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8100 --reload
 ```
 
 - API Documentation: [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -69,7 +69,7 @@ Buka terminal baru:
 cd fullstack
 
 # Jalankan development server Next.js:
-npm.cmd run dev
+npx next dev -H 0.0.0.0 -p 3100
 ```
 
 Buka peramban di [http://localhost:3000](http://localhost:3000).

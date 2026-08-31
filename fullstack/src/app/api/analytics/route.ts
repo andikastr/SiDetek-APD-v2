@@ -1,23 +1,50 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const totalAudits = await prisma.auditLog.count();
+    const user = await getCurrentUser();
+    const whereClause: Record<string, unknown> = {};
+
+    if (user) {
+      whereClause.OR = [
+        { userId: user.id },
+        { userId: null },
+      ];
+    }
+
+    // Real active user count in the system
+    const activeUsers = await prisma.user.count();
+
+    // Real camera feeds count in the system / user
+    const activeCameras = await prisma.camera.count({
+      where: user
+        ? {
+            OR: [
+              { userId: user.id },
+              { userId: null },
+            ],
+          }
+        : undefined,
+    });
+
+    const totalAudits = await prisma.auditLog.count({ where: whereClause });
 
     const compliantCount = await prisma.auditLog.count({
-      where: { complianceStatus: "COMPLIANT" },
+      where: { ...whereClause, complianceStatus: "COMPLIANT" },
     });
 
     const partialCount = await prisma.auditLog.count({
-      where: { complianceStatus: "PARTIAL" },
+      where: { ...whereClause, complianceStatus: "PARTIAL" },
     });
 
     const violationCount = await prisma.auditLog.count({
-      where: { complianceStatus: "NON_COMPLIANT" },
+      where: { ...whereClause, complianceStatus: "NON_COMPLIANT" },
     });
 
     const aggregates = await prisma.auditLog.aggregate({
+      where: whereClause,
       _sum: {
         helmetCount: true,
         jacketCount: true,
@@ -29,13 +56,17 @@ export async function GET() {
       },
     });
 
-    const recentAudits = await prisma.auditLog.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      include: {
-        items: true,
-      },
-    });
+    // For authenticated users: return recent audit logs. For guests: protect log records
+    const recentAudits = user
+      ? await prisma.auditLog.findMany({
+          where: whereClause,
+          orderBy: { createdAt: "desc" },
+          take: 5,
+          include: {
+            items: true,
+          },
+        })
+      : [];
 
     const complianceRate =
       totalAudits > 0
@@ -45,6 +76,8 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: {
+        activeUsers,
+        activeCameras,
         totalAudits,
         complianceRate,
         compliantCount,

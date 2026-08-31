@@ -1,14 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized. Please login to view your audit history." },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
     const source = searchParams.get("source");
     const limit = parseInt(searchParams.get("limit") || "50", 10);
 
-    const whereClause: Record<string, unknown> = {};
+    const whereClause: Record<string, unknown> = {
+      OR: [
+        { userId: user.id },
+        { userId: null },
+      ],
+    };
+
     if (status && status !== "ALL") {
       whereClause.complianceStatus = status;
     }
@@ -41,12 +56,27 @@ export async function GET(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized. Please login to manage audit records." },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     const deleteAll = searchParams.get("all") === "true";
 
     if (deleteAll) {
-      const result = await prisma.auditLog.deleteMany({});
+      const result = await prisma.auditLog.deleteMany({
+        where: {
+          OR: [
+            { userId: user.id },
+            { userId: null },
+          ],
+        },
+      });
       return NextResponse.json({
         success: true,
         message: `Successfully deleted all ${result.count} audit logs.`,
@@ -57,6 +87,23 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json(
         { success: false, error: "Missing 'id' parameter." },
         { status: 400 }
+      );
+    }
+
+    const existing = await prisma.auditLog.findFirst({
+      where: {
+        id,
+        OR: [
+          { userId: user.id },
+          { userId: null },
+        ],
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Audit record not found or unauthorized." },
+        { status: 404 }
       );
     }
 
@@ -79,6 +126,7 @@ export async function DELETE(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getCurrentUser();
     const body = await req.json();
     const source = body.source || (body.method === "WEBCAM" ? "WEBCAM" : "UPLOAD");
     const fileName = body.fileName || body.filename || "Audit_Capture.jpg";
@@ -118,6 +166,7 @@ export async function POST(req: NextRequest) {
         totalDetected,
         inferenceMs,
         notes,
+        userId: user?.id || null,
         items: {
           create: (objects || []).map((obj: {
             class_id?: number;
@@ -167,4 +216,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

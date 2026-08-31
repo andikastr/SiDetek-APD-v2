@@ -21,10 +21,13 @@ model AuditLog {
   totalDetected     Int            @default(0)
   inferenceMs       Float          @default(0)
   notes             String?
+  userId            String?
+  user              User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   items             DetectedItem[]
 
   @@index([createdAt])
   @@index([complianceStatus])
+  @@index([userId])
 }
 
 model DetectedItem {
@@ -55,6 +58,36 @@ model Camera {
   url       String?
   location  String?
   isActive  Boolean  @default(false)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
+  @@index([userId])
+}
+
+model SafetyRecommendation {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  complianceRate Float
+  totalAudits    Int
+  itemsJson      String   // JSON string of array of 3 recommendation items
+
+  @@index([userId, createdAt])
+}
+
+model User {
+  id              String                 @id @default(cuid())
+  username        String                 @unique
+  email           String?                @unique
+  name            String
+  passwordHash    String
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  auditLogs       AuditLog[]
+  cameras         Camera[]
+  recommendations SafetyRecommendation[]
+
+  @@index([username])
 }
