@@ -54,12 +54,16 @@ SiDetek-APD/
 ```powershell
 cd ai-engine
 
-# Jalankan server FastAPI menggunakan environment bawaan:
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8100 --reload
+# Opsi 1: Aktifkan .venv lalu jalankan main.py
+.\.venv\Scripts\Activate.ps1
+python main.py
+
+# Opsi 2: Jalankan langsung menggunakan Python di .venv
+.\.venv\Scripts\python.exe main.py
 ```
 
-- API Documentation: [http://localhost:8000/docs](http://localhost:8000/docs)
-- Health Check: [http://localhost:8000/health](http://localhost:8000/health)
+- API Documentation: [http://localhost:8100/docs](http://localhost:8100/docs)
+- Health Check: [http://localhost:8100/health](http://localhost:8100/health)
 
 ### 2. Menjalankan Web Application
 
